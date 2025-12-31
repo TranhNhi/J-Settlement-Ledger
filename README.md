@@ -32,6 +32,7 @@ com.bank.settlement
 ├── model           # Data structures (Block, Transaction, BankNode)
 ├── util            # Cryptography Tools (SHA-256, ECDSA)
 └── JSettlementApplication.java
+
 🚀 Hướng dẫn khởi chạy
 Clone dự án:
 
