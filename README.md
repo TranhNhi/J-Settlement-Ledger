@@ -36,14 +36,9 @@ com.bank.settlement
 🚀 Hướng dẫn khởi chạy
 Clone dự án:
 
-Bash
-
-git clone https://github.com/yourusername/j-settlement-ledger.git
+Bash git clone https://github.com/yourusername/j-settlement-ledger.git
 Build dự án:
-
-Bash
-
-mvn clean install -DskipTests
+Bash mvn clean install -DskipTests
 Chạy ứng dụng: Chạy file JSettlementApplication.java từ IDE của bạn (IntelliJ/Eclipse).
 
 📡 API Documentation
