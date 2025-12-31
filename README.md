@@ -29,6 +29,7 @@ Library: Lombok, Gson
 🏗 Cấu trúc dự án
 
 C:\Users\DELL\Downloads\J-Settlement-Ledger\src\main\java\com\example\J_Settlement\Ledger
+
 ├── controller      # REST API Endpoints
 ├── service         # Blockchain & Business Logic
 ├── model           # Data structures (Block, Transaction, BankNode)
@@ -36,11 +37,13 @@ C:\Users\DELL\Downloads\J-Settlement-Ledger\src\main\java\com\example\J_Settleme
 └── JSettlementApplication.java
 
 🚀 Hướng dẫn khởi chạy
+
 Clone dự án:
 
 Bash git clone https://github.com/yourusername/j-settlement-ledger.git
 
 Build dự án:
+
 Bash mvn clean install -DskipTests
 
 Chạy ứng dụng: Chạy file JSettlementApplication.java từ IDE của bạn (IntelliJ/Eclipse).
