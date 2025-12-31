@@ -31,9 +31,13 @@ Library: Lombok, Gson
 C:\Users\DELL\Downloads\J-Settlement-Ledger\src\main\java\com\example\J_Settlement\Ledger
 
 ├── controller      # REST API Endpoints
+
 ├── service         # Blockchain & Business Logic
+
 ├── model           # Data structures (Block, Transaction, BankNode)
+
 ├── util            # Cryptography Tools (SHA-256, ECDSA)
+
 └── JSettlementApplication.java
 
 🚀 Hướng dẫn khởi chạy
