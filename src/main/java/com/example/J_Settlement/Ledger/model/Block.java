@@ -1,20 +1,61 @@
 package com.example.J_Settlement.Ledger.model;
 
-import lombok.Getter;
-import lombok.Setter;
-import java.util.ArrayList;
+import com.example.J_Settlement.Ledger.until.CryptoUtil;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
-@Getter
-@Setter
+@Entity
+@Table(name = "blocks")
+@Data
+@NoArgsConstructor
 public class Block {
-    private String hash;         // Mã băm của khối này
-    private String previousHash; // Mã băm của khối trước đó (Liên kết chuỗi)
-    private long timeStamp;      // Thời gian tạo khối
-    private List<Transaction> transactions = new ArrayList<>();
 
-    public Block(String previousHash) {
+    @Id
+    @Column(name = "hash", nullable = false)
+    private String hash;
+
+    @Column(name = "block_index", nullable = false)
+    private Long index;
+
+    @Column(name = "previous_hash", nullable = false)
+    private String previousHash;
+
+    @Column(name = "timestamp", nullable = false)
+    private long timestamp;
+
+    @Column(name = "state_root")
+    private String stateRoot;
+
+
+    // Hibernate tự persist toàn bộ TX mới vào CENTRAL DB.
+    // CascadeType.MERGE giữ lại để có thể update status TX đã tồn tại.
+    // Khi sync sang local DB, transactions list được set rỗng trước khi save
+    // nên cascade không ảnh hưởng — TX local được saveAll() riêng.
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "block_hash")
+    private List<Transaction> transactions;
+
+    public Block(String hash, String previousHash, Long index,
+                 List<Transaction> transactions, String stateRoot) {
+        this.hash = hash;
         this.previousHash = previousHash;
-        this.timeStamp = System.currentTimeMillis();
+        this.index = index;
+        this.transactions = transactions;
+        this.stateRoot = stateRoot;
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    // Tính lại hash để verify tính toàn vẹn — dùng trong IntegrityService
+    public String calculateHash() {
+        String txData = transactions != null
+                ? transactions.stream()
+                .map(tx -> tx.getSender() + tx.getRecipient() + tx.getAmount())
+                .reduce("", String::concat)
+                : "";
+
+        return CryptoUtil.applySha256(index + previousHash + timestamp + txData);
     }
 }
