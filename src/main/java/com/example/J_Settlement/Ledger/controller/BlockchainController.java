@@ -1,53 +1,55 @@
 package com.example.J_Settlement.Ledger.controller;
 
-import com.example.J_Settlement.Ledger.model.BankNode;
+import com.example.J_Settlement.Ledger.DTO.ApiResponse;
+import com.example.J_Settlement.Ledger.Repository.BlockRepository;
 import com.example.J_Settlement.Ledger.model.Block;
-import com.example.J_Settlement.Ledger.model.Transaction;
-import com.example.J_Settlement.Ledger.service.BlockchainService;
-import com.example.J_Settlement.Ledger.until.CryptoUtil;
+import com.example.J_Settlement.Ledger.service.IntegrityService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/blockchain")
 public class BlockchainController {
 
     @Autowired
-    private BlockchainService blockchainService;
+    private BlockRepository blockRepository;
 
-    // 1. Lấy toàn bộ chuỗi khối (Dùng để đối soát)
-    @GetMapping("/ledger")
-    public List<Block> getChain() {
-        return blockchainService.getBlockchain();
+    @Autowired
+    private IntegrityService integrityService;
+
+    // Lấy danh sách toàn bộ các khối để hiển thị lên UI
+    @GetMapping("/blocks")
+    public ResponseEntity<ApiResponse<List<Block>>> getChain() {
+        List<Block> blocks = blockRepository.findAllByOrderByIndexAsc();
+        return ResponseEntity.ok(ApiResponse.success("Tải dữ liệu chuỗi thành công", blocks));
     }
 
-    // 2. Đăng ký một ngân hàng mới vào mạng lưới
-    @PostMapping("/banks")
-    public BankNode register(@RequestParam String name) {
-        return blockchainService.registerBank(name);
+    // TÍNH NĂNG MỚI: Kiểm tra tính toàn vẹn của toàn bộ hệ thống
+    @GetMapping("validate")
+    public ResponseEntity<ApiResponse<String>> validate() {
+        boolean isValid = integrityService.isChainValid();
+        if (isValid) {
+            return ResponseEntity.ok(ApiResponse.success("Hệ thống toàn vẹn. Dữ liệu chưa bị thay đổi.", "VALID"));
+        } else {
+            return ResponseEntity.status(400).body(ApiResponse.error("CẢNH BÁO: Dữ liệu Blockchain đã bị can thiệp trái phép!"));
+        }
     }
+    @GetMapping("/status")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getStatus() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("connected", true);
+        data.put("nodeName", "Vietcombank Ledger Node");
+        data.put("totalBlocks", blockRepository.count());
 
-    // 3. Thực hiện chuyển khoản giữa 2 ngân hàng (Quyết toán)
-    @PostMapping("/transfer")
-    public String transfer(@RequestParam String from, @RequestParam String to, @RequestParam double amount) {
-        BankNode sender = blockchainService.findBankByName(from);
-        BankNode receiver = blockchainService.findBankByName(to);
-
-        if (sender == null || receiver == null) return "Lỗi: Không tìm thấy ngân hàng!";
-
-        // Tạo giao dịch
-        Transaction t = new Transaction(sender.getPublicKey(), receiver.getPublicKey(), amount);
-
-        // Ký giao dịch bằng Private Key của người gửi (Bảo mật thực tế)
-        String dataToSign = CryptoUtil.getStringFromKey(sender.getPublicKey()) +
-                CryptoUtil.getStringFromKey(receiver.getPublicKey()) + amount;
-        byte[] sig = CryptoUtil.applyECDSASig(sender.getPrivateKey(), dataToSign);
-        t.setSignature(sig);
-
-        // Đưa vào Blockchain
-        boolean success = blockchainService.addTransaction(t, sender);
-        return success ? "Quyết toán thành công!" : "Quyết toán thất bại (Check số dư)!";
+        return ResponseEntity.ok(ApiResponse.success("Hệ thống trực tuyến", data));
     }
 }
