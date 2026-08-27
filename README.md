@@ -44,7 +44,7 @@ C:\Users\DELL\Downloads\J-Settlement-Ledger\src\main\java\com\example\J_Settleme
 
 Clone dự án:
 
-Bash git clone https://github.com/yourusername/j-settlement-ledger.git
+Bash git clone https://github.com/yourusername/J-Settlement-Ledger.git
 
 Build dự án:
 
